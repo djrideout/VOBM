@@ -1,0 +1,19 @@
+{
+  "name": "vobm",
+  "version": "1.0.0",
+  "description": "Voice of Bayman",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/djrideout/VOBM.git"
+  },
+  "author": "D.J. Rideout",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/djrideout/VOBM/issues"
+  },
+  "homepage": "https://github.com/djrideout/VOBM#readme"
+}
