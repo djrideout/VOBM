@@ -2,7 +2,7 @@
   "name": "vobm",
   "version": "1.0.0",
   "description": "Voice of Bayman",
-  "main": "index.js",
+  "main": "index.mjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/djrideout/VOBM/issues"
   },
-  "homepage": "https://github.com/djrideout/VOBM#readme"
+  "homepage": "https://github.com/djrideout/VOBM#readme",
+  "dependencies": {
+    "jsdom": "^24.1.0"
+  }
 }
