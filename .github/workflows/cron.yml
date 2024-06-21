@@ -1,0 +1,46 @@
+on:
+  push:
+  schedule:
+  - cron: '12,27,42,57 * * * *'
+concurrency: cron
+defaults:
+  run:
+    shell: bash
+jobs:
+  cron:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # to update gh-pages branch
+      pages: write    # to deploy to Pages
+      id-token: write # to verify the deployment originates from an appropriate source
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up worktrees
+      run: |-
+        git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
+        git worktree add gh-pages gh-pages
+    - uses: actions/setup-node@v4
+    - name: Set up node
+      with:
+        node-version: latest
+        cache: npm
+        cache-dependency-path: package-lock.json
+    - name: Install dependencies
+      run: npm install
+    - name: Check VOCM
+      timeout-minutes: 5
+      run: node index.mjs
+    - name: Commit if dirty
+      run: |-
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email "$(whoami)@$(hostname --fqdn)"
+        dirty() {
+        	[ -n "$(git status --porcelain)" ]
+        }
+        push() {
+        	git add --all
+        	git commit --amend --reset-author --message "${2:-Automatic commit}"
+        	git push --force
+        }
+        (cd gh-pages; if dirty; then push; echo "DEPLOY=1" >> "${GITHUB_ENV}"; fi)
+        
