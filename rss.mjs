@@ -15,6 +15,26 @@ export class Article {
         PUB_DATE: "pubDate"
     }
 
+    static Prefix(tag) {
+        switch (tag) {
+            case Article.Tags.DESCRIPTION:
+            case Article.Tags.CONTENT:
+                return "<![CDATA[";
+            default:
+                return "";
+        }
+    }
+
+    static Postfix(tag) {
+        switch (tag) {
+            case Article.Tags.DESCRIPTION:
+            case Article.Tags.CONTENT:
+                return "]]>";
+            default:
+                return "";
+        }
+    }
+
     static fromElement(xml) {
         let fields = Object.values(Article.Tags).reduce((accu, tag) => {
             let value = xml.getElementsByTagName(tag)[0]?.textContent;
@@ -28,7 +48,7 @@ export class Article {
 
     toString() {
         return Object.values(Article.Tags).reduce((accu, tag) => {
-            return `${accu}<${tag}>${this[tag]}</${tag}>`;
+            return `${accu}<${tag}>${Article.Prefix(tag)}${this[tag]}${Article.Postfix(tag)}</${tag}>`;
         }, "<item>") + "</item>";
     }
 
