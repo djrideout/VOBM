@@ -17,6 +17,9 @@
   },
   "homepage": "https://github.com/djrideout/VOBM#readme",
   "dependencies": {
-    "jsdom": "^24.1.0"
+    "dotenv": "^16.4.5",
+    "jsdom": "^24.1.0",
+    "lodash": "^4.17.21",
+    "openai": "^4.52.0"
   }
 }
