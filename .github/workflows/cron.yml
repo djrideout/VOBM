@@ -20,7 +20,6 @@ jobs:
         git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
         git worktree add gh-pages gh-pages
     - uses: actions/setup-node@v4
-    - name: Set up node
       with:
         node-version: latest
         cache: npm
