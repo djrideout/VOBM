@@ -54,6 +54,10 @@ curr.setDescription(description);
 for (let guid of newArticles) {
     let article = next.getArticleByGUID(guid).clone();
 
+    if (!article.getCategory().includes("Local News")) {
+        continue;
+    }
+
     let result = "";
     try {
         let stream = await openai.chat.completions.create({

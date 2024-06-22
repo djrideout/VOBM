@@ -13,14 +13,16 @@ export class Article {
         CREATOR: "dc:creator",
         DESCRIPTION: "description",
         CONTENT: "content:encoded",
-        PUB_DATE: "pubDate"
+        PUB_DATE: "pubDate",
+        CATEGORY: "category"
     }
 
     static Prefix(tag) {
         switch (tag) {
             case Article.Tags.DESCRIPTION:
             case Article.Tags.CONTENT:
-                return "<![CDATA[";
+            case Article.Tags.CATEGORY:
+                return this[tag].indexOf("<![CDATA[") === -1 ? "<![CDATA[" : "";
             default:
                 return "";
         }
@@ -30,7 +32,8 @@ export class Article {
         switch (tag) {
             case Article.Tags.DESCRIPTION:
             case Article.Tags.CONTENT:
-                return "]]>";
+            case Article.Tags.CATEGORY:
+                return this[tag].indexOf("]]>") === -1 ? "]]>" : "";
             default:
                 return "";
         }
@@ -79,6 +82,10 @@ export class Article {
 
     setDescription(value) {
         this.set(Article.Tags.DESCRIPTION, value);
+    }
+
+    getCategory(value) {
+        return this.get(Article.Tags.CATEGORY, value);
     }
 
     clone() {
