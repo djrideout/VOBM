@@ -1,7 +1,8 @@
 export class Article {
     constructor(fields) {
-        for (let key of Object.values(Article.Tags)) {
-            this[key] = fields[key] ?? "";
+        this.data_ = {};
+        for (let tag of Article.TagValues) {
+            this.data_[tag] = fields[tag] ?? "";
         }
     }
 
@@ -17,8 +18,12 @@ export class Article {
         CATEGORY: "category"
     }
 
-    getFormattedField(tag) {
-        let value = this[tag];
+    static get TagValues() {
+        return Object.values(Article.Tags);
+    }
+
+    getFormattedField_(tag) {
+        let value = this.data_[tag];
         let prefix = "";
         let postfix = "";
         if ([
@@ -33,67 +38,59 @@ export class Article {
     }
 
     static fromElement(xml) {
-        let fields = Object.values(Article.Tags).reduce((accu, tag) => {
+        let fields = {};
+        for (let tag of Article.TagValues) {
             let el = xml.getElementsByTagName(tag)[0];
             if (el) {
-                accu[tag] = tag === Article.Tags.MEDIA ? el.outerHTML : el.textContent;
+                fields[tag] = tag === Article.Tags.MEDIA ? el.outerHTML : el.textContent;
             }
-            return accu;
-        }, {});
+        }
         return new Article(fields);
     }
 
     toString() {
-        return Object.values(Article.Tags).reduce((accu, tag) => {
-            return tag === Article.Tags.MEDIA ? `${accu}${this[tag]}` : `${accu}<${tag}>${this.getFormattedField(tag)}</${tag}>`;
-        }, "<item>") + "</item>";
+        let output = "<item>";
+        for (let tag of Article.TagValues) {
+            output += tag === Article.Tags.MEDIA ? this.data_[tag] : `<${tag}>${this.getFormattedField_(tag)}</${tag}>`;
+        }
+        output += "</item>";
+        return output;
     }
 
-    set(tag, value) {
-        this[tag] = value;
+    set content(value) {
+        this.data_[Article.Tags.CONTENT] = value;
     }
 
-    get(tag) {
-        return this[tag];
+    get content() {
+        return this.data_[Article.Tags.CONTENT];
     }
 
-    setContent(value) {
-        this.set(Article.Tags.CONTENT, value);
+    get guid() {
+        return this.data_[Article.Tags.GUID];
     }
 
-    getContent() {
-        return this.get(Article.Tags.CONTENT);
+    get pubDate() {
+        return this.data_[Article.Tags.PUB_DATE];
     }
 
-    getGUID() {
-        return this.get(Article.Tags.GUID);
+    set description(value) {
+        this.data_[Article.Tags.DESCRIPTION] = value;
     }
 
-    getPubDate() {
-        return this.get(Article.Tags.PUB_DATE);
-    }
-
-    setDescription(value) {
-        this.set(Article.Tags.DESCRIPTION, value);
-    }
-
-    getCategory(value) {
-        return this.get(Article.Tags.CATEGORY, value);
+    get category() {
+        return this.data_[Article.Tags.CATEGORY];
     }
 
     clone() {
-        let next = {};
-        for (let key of Object.values(Article.Tags)) {
-            next[key] = this[key];
-        }
-        return new Article(next);
+        return new Article({ ...this.data_ });
     }
 }
 
 export class Feed {
     constructor(fields, articles = []) {
-        for (let key of Object.values(Feed.Tags)) {
-            this[key] = fields[key] ?? "";
+        this.data_ = {};
+        for (let key of Feed.TagValues) {
+            this.data_[key] = fields[key] ?? "";
         }
         this.articles_ = articles;
     }
@@ -107,62 +104,61 @@ export class Feed {
         LAST_BUILD_DATE: "lastBuildDate",
     }
 
+    static get TagValues() {
+        return Object.values(Feed.Tags);
+    }
+
     static fromElement(xml) {
-        let fields = Object.values(Feed.Tags).reduce((accu, tag) => {
+        let fields = {};
+        for (let tag of Feed.TagValues) {
             let el = xml.getElementsByTagName(tag)[0];
             if (el) {
-                accu[tag] = tag === Feed.Tags.ATOM_LINK ? el.getAttribute("href") : el.textContent;
+                fields[tag] = tag === Feed.Tags.ATOM_LINK ? el.getAttribute("href") : el.textContent;
             }
-            return accu;
-        }, {});
+        }
         let articles = [...xml.querySelectorAll("item")].map((el) => Article.fromElement(el));
         return new Feed(fields, articles);
     }
 
     toString() {
-        let articles = this.articles_.reduce((accu, article) => {
-            return `${accu}${article.toString()}`;
-        }, "");
-        return Object.values(Feed.Tags).reduce((accu, tag) => {
-            return tag === Feed.Tags.ATOM_LINK ? `${accu}<${tag} href="${this[tag]}" rel="self" type="application/rss+xml" />` : `${accu}<${tag}>${this[tag]}</${tag}>`;
-        }, '<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss/" version="2.0"><channel>') + `${articles}</channel></rss>`;
+        let output = '<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss/" version="2.0"><channel>';
+        for (let tag of Feed.TagValues) {
+            output += tag === Feed.Tags.ATOM_LINK ? `<${tag} href="${this.data_[tag]}" rel="self" type="application/rss+xml" />` : `<${tag}>${this.data_[tag]}</${tag}>`;
+        }
+        for (let article of this.articles_) {
+            output += article.toString();
+        }
+        output += "</channel></rss>";
+        return output;
     }
 
-    getArticles() {
+    get articles() {
         return [...this.articles_];
+    }
+
+    set title(value) {
+        this.data_[Feed.Tags.TITLE] = value;
+    }
+
+    set lastBuildDate(value) {
+        this.data_[Feed.Tags.LAST_BUILD_DATE] = value;
+    }
+
+    set atomLink(value) {
+        this.data_[Feed.Tags.ATOM_LINK] = value;
+    }
+
+    set description(value) {
+        this.data_[Feed.Tags.DESCRIPTION] = value;
     }
 
     addArticle(article) {
         this.articles_.unshift(article);
         this.articles_.splice(10);
-        this.articles_.sort((a, b) => new Date(b.getPubDate()) - new Date(a.getPubDate()));
+        this.articles_.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
     }
 
     getArticleByGUID(guid) {
-        return this.articles_.find((article) => article.getGUID() === guid);
-    }
-
-    set(tag, value) {
-        this[tag] = value;
-    }
-
-    get(tag) {
-        return this[tag];
-    }
-
-    setTitle(value) {
-        this.set(Feed.Tags.TITLE, value);
-    }
-
-    setLastBuildDate(value) {
-        this.set(Feed.Tags.LAST_BUILD_DATE, value);
-    }
-
-    setAtomLink(value) {
-        this.set(Feed.Tags.ATOM_LINK, value);
-    }
-
-    setDescription(value) {
-        this.set(Feed.Tags.DESCRIPTION, value);
+        return this.articles_.find((article) => article.guid === guid);
     }
 }

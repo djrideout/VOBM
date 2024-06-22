@@ -33,8 +33,8 @@ try {
     process.exit(); // Nothing to compare to, so exit
 }
 
-let currArticles = curr.getArticles().map((article) => article.getGUID());
-let nextArticles = next.getArticles().map((article) => article.getGUID());
+let currArticles = curr.articles.map((article) => article.guid);
+let nextArticles = next.articles.map((article) => article.guid);
 let newArticles = _.intersection(nextArticles, _.xor(currArticles, nextArticles));
 if (!newArticles.length) {
     console.log("No new articles");
@@ -47,14 +47,14 @@ const openai = new OpenAI({
 });
 
 let buildDate = (new Date()).toUTCString();
-curr.setTitle(title);
-curr.setAtomLink(xmlURL);
-curr.setDescription(description);
+curr.title = title;
+curr.atomLink = xmlURL;
+curr.description = description;
 
 for (let guid of newArticles) {
     let article = next.getArticleByGUID(guid).clone();
 
-    if (!article.getCategory().includes("Local News")) {
+    if (!article.category.includes("Local News")) {
         continue;
     }
 
@@ -62,7 +62,7 @@ for (let guid of newArticles) {
     try {
         let stream = await openai.chat.completions.create({
             model: "gpt-4o",
-            messages: [{ role: "user", content: prompt(article.getContent()) }],
+            messages: [{ role: "user", content: prompt(article.content) }],
             stream: true
         });
         for await (const chunk of stream) {
@@ -73,10 +73,10 @@ for (let guid of newArticles) {
         continue;
     }
 
-    article.setContent(result);
-    article.setDescription(result);
+    article.content = result;
+    article.description = result;
+    curr.lastBuildDate = buildDate;
     curr.addArticle(article);
-    curr.setLastBuildDate(buildDate);
 }
 
 await fs.mkdir(xmlDir, { recursive: true });
