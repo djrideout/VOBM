@@ -17,26 +17,19 @@ export class Article {
         CATEGORY: "category"
     }
 
-    static Prefix(tag) {
-        switch (tag) {
-            case Article.Tags.DESCRIPTION:
-            case Article.Tags.CONTENT:
-            case Article.Tags.CATEGORY:
-                return this[tag].startsWith("<![CDATA[") ? "" : "<![CDATA[";
-            default:
-                return "";
+    getFormattedField(tag) {
+        let value = this[tag];
+        let prefix = "";
+        let postfix = "";
+        if ([
+            Article.Tags.DESCRIPTION,
+            Article.Tags.CONTENT,
+            Article.Tags.CATEGORY
+        ].some((t) => tag === t)) {
+            prefix = value.startsWith("<![CDATA[") ? "" : "<![CDATA[";
+            postfix = value.endsWith("]]>") ? "" : "]]>";
         }
-    }
-
-    static Postfix(tag) {
-        switch (tag) {
-            case Article.Tags.DESCRIPTION:
-            case Article.Tags.CONTENT:
-            case Article.Tags.CATEGORY:
-                return this[tag].endsWith("]]>") ? "" : "]]>";
-            default:
-                return "";
-        }
+        return `${prefix}${value}${postfix}`;
     }
 
     static fromElement(xml) {
@@ -52,7 +45,7 @@ export class Article {
 
     toString() {
         return Object.values(Article.Tags).reduce((accu, tag) => {
-            return tag === Article.Tags.MEDIA ? `${accu}${this[tag]}` : `${accu}<${tag}>${Article.Prefix(tag)}${this[tag]}${Article.Postfix(tag)}</${tag}>`;
+            return tag === Article.Tags.MEDIA ? `${accu}${this[tag]}` : `${accu}<${tag}>${this.getFormattedField(tag)}</${tag}>`;
         }, "<item>") + "</item>";
     }
 
