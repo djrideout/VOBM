@@ -22,7 +22,7 @@ export class Article {
             case Article.Tags.DESCRIPTION:
             case Article.Tags.CONTENT:
             case Article.Tags.CATEGORY:
-                return this[tag].indexOf("<![CDATA[") === -1 ? "<![CDATA[" : "";
+                return this[tag].startsWith("<![CDATA[") ? "" : "<![CDATA[";
             default:
                 return "";
         }
@@ -33,7 +33,7 @@ export class Article {
             case Article.Tags.DESCRIPTION:
             case Article.Tags.CONTENT:
             case Article.Tags.CATEGORY:
-                return this[tag].indexOf("]]>") === -1 ? "]]>" : "";
+                return this[tag].endsWith("]]>") ? "" : "]]>";
             default:
                 return "";
         }
