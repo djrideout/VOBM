@@ -10,7 +10,8 @@ global.DOMParser = new (new JSDOM()).window.DOMParser();
 
 const title = "VOBM";
 const description = "Voice of Bayman";
-const xmlPath = "gh-pages/rss.xml";
+const xmlDir = "gh-pages";
+const xmlPath = `${xmlDir}/rss.xml`;
 const xmlURL = "https://djrideout.github.io/VOBM/rss.xml";
 const vocmURL = "https://vocm.com/feed/";
 
@@ -26,7 +27,7 @@ try {
 
 let next = null;
 try {
-    next = Feed.fromElement(DOMParser.parseFromString(await fetch(vocmURL).then(v => v.text()), "application/xml"));
+    next = Feed.fromElement(DOMParser.parseFromString(await fetch(vocmURL).then((res) => res.text()), "application/xml"));
 } catch (ex) {
     console.log(`Cannot fetch ${vocmURL}: ${ex.message}`);
     process.exit(); // Nothing to compare to, so exit
@@ -54,7 +55,6 @@ for (let guid of newArticles) {
     let article = next.getArticleByGUID(guid).clone();
 
     let result = "";
-
     try {
         let stream = await openai.chat.completions.create({
             model: "gpt-4o",
@@ -75,5 +75,5 @@ for (let guid of newArticles) {
     curr.setLastBuildDate(buildDate);
 }
 
-await fs.mkdir("gh-pages", { recursive: true });
+await fs.mkdir(xmlDir, { recursive: true });
 await fs.writeFile(xmlPath, curr.toString());

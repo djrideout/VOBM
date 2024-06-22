@@ -40,16 +40,7 @@ export class Article {
         let fields = Object.values(Article.Tags).reduce((accu, tag) => {
             let el = xml.getElementsByTagName(tag)[0];
             if (el) {
-                let value = null;
-                switch (tag) {
-                    case Article.Tags.MEDIA:
-                        value = el.outerHTML;
-                        break;
-                    default:
-                        value = el.textContent;
-                        break;
-                }
-                accu[tag] = value;
+                accu[tag] = tag === Article.Tags.MEDIA ? el.outerHTML : el.textContent;
             }
             return accu;
         }, {});
@@ -58,12 +49,7 @@ export class Article {
 
     toString() {
         return Object.values(Article.Tags).reduce((accu, tag) => {
-            switch (tag) {
-                case Article.Tags.MEDIA:
-                    return `${accu}${this[tag]}`;
-                default:
-                    return `${accu}<${tag}>${Article.Prefix(tag)}${this[tag]}${Article.Postfix(tag)}</${tag}>`;
-            }
+            return tag === Article.Tags.MEDIA ? `${accu}${this[tag]}` : `${accu}<${tag}>${Article.Prefix(tag)}${this[tag]}${Article.Postfix(tag)}</${tag}>`;
         }, "<item>") + "</item>";
     }
 
@@ -125,16 +111,7 @@ export class Feed {
         let fields = Object.values(Feed.Tags).reduce((accu, tag) => {
             let el = xml.getElementsByTagName(tag)[0];
             if (el) {
-                let value = null;
-                switch (tag) {
-                    case Feed.Tags.ATOM_LINK:
-                        value = el.getAttribute("href");
-                        break;
-                    default:
-                        value = el.textContent;
-                        break;
-                }
-                accu[tag] = value;
+                accu[tag] = tag === Feed.Tags.ATOM_LINK ? el.getAttribute("href") : el.textContent;
             }
             return accu;
         }, {});
@@ -147,12 +124,7 @@ export class Feed {
             return `${accu}${article.toString()}`;
         }, "");
         return Object.values(Feed.Tags).reduce((accu, tag) => {
-            switch (tag) {
-                case Feed.Tags.ATOM_LINK:
-                    return `${accu}<${tag} href="${this[tag]}" rel="self" type="application/rss+xml" />`
-                default:
-                    return `${accu}<${tag}>${this[tag]}</${tag}>`;
-            }
+            return tag === Feed.Tags.ATOM_LINK ? `${accu}<${tag} href="${this[tag]}" rel="self" type="application/rss+xml" />` : `${accu}<${tag}>${this[tag]}</${tag}>`;
         }, '<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss/" version="2.0"><channel>') + `${articles}</channel></rss>`;
     }
 
