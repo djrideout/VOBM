@@ -153,9 +153,9 @@ export class Feed {
     }
 
     addArticle(article) {
-        this.articles_.unshift(article);
-        this.articles_.splice(10);
+        this.articles_.push(article);
         this.articles_.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+        this.articles_.splice(10);
     }
 
     getArticleByGUID(guid) {

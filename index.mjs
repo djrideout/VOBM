@@ -40,6 +40,10 @@ if (!newArticles.length) {
     console.log("No new articles");
     process.exit();
 }
+console.log("New articles:");
+for (let article of newArticles) {
+    console.log(`- ${article}`);
+}
 
 const openai = new OpenAI({
     organization: process.env.OPENAI_ORG_ID,
@@ -51,13 +55,22 @@ curr.title = title;
 curr.atomLink = xmlURL;
 curr.description = description;
 
+let published = curr.articles;
+
 for (let guid of newArticles) {
     let article = next.getArticleByGUID(guid).clone();
 
     if (!article.category.includes("Local News")) {
+        console.log(`Article ${guid} not Local News, skipping...`);
         continue;
     }
 
+    if (published.length && new Date(article.pubDate) < new Date(published[0].pubDate)) {
+        console.log(`Article ${guid} older than newest VOBM article, skipping...`);
+        continue;
+    }
+
+    console.log(`Generating content for article ${guid}...`);
     let result = "";
     try {
         let stream = await openai.chat.completions.create({
@@ -72,6 +85,7 @@ for (let guid of newArticles) {
         console.log(`Could not generate content: ${ex.message}`);
         continue;
     }
+    console.log(`Content generated for article ${guid}.`);
 
     article.content = result;
     article.description = result;
@@ -79,5 +93,7 @@ for (let guid of newArticles) {
     curr.addArticle(article);
 }
 
+console.log(`Writing XML to file ${xmlPath}...`);
 await fs.mkdir(xmlDir, { recursive: true });
 await fs.writeFile(xmlPath, curr.toString());
+console.log("Done.");
