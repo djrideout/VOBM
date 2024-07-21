@@ -79,7 +79,9 @@ for (let guid of newArticles) {
             stream: true
         });
         for await (const chunk of stream) {
-            result += chunk.choices[0]?.delta?.content ?? "";
+            let content = chunk.choices[0]?.delta?.content ?? "";
+            content = content.replaceAll("VOCM", "VOBM");
+            result += content;
         }
     } catch (ex) {
         console.log(`Could not generate content: ${ex.message}`);
