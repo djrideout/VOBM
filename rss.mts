@@ -121,6 +121,14 @@ export class Feed {
         return new Feed(fields, articles);
     }
 
+    static createEmpty() {
+        let fields = {};
+        for (let tag of Feed.TagValues) {
+            fields[tag] = "";
+        }
+        return new Feed(fields);
+    }
+
     toString() {
         let output =
             '<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss/" version="2.0"><channel>';
