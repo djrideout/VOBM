@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  type-check:
+  linting-check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
