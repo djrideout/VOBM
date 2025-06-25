@@ -2,9 +2,10 @@
   "name": "vobm",
   "version": "1.0.0",
   "description": "Voice of Bayman",
-  "main": "index.mjs",
+  "main": "index.mts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "generate": "tsx index.mts",
+    "lint:ts": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
@@ -21,5 +22,12 @@
     "jsdom": "^24.1.0",
     "lodash": "^4.17.21",
     "openai": "^4.52.0"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^21.1.7",
+    "@types/lodash": "^4.17.18",
+    "@types/node": "^24.0.4",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
   }
 }

@@ -1,5 +1,7 @@
 export class Article {
-    constructor(fields) {
+    private data_: Record<string, string>;
+
+    constructor(fields: Record<string, string>) {
         this.data_ = {};
         for (let tag of Article.TagValues) {
             this.data_[tag] = fields[tag] ?? "";
@@ -22,7 +24,7 @@ export class Article {
         return Object.values(Article.Tags);
     }
 
-    getFormattedField_(tag) {
+    getFormattedField_(tag: string) {
         let value = this.data_[tag];
         let prefix = "";
         let postfix = "";
@@ -37,7 +39,7 @@ export class Article {
         return `${prefix}${value}${postfix}`;
     }
 
-    static fromElement(xml) {
+    static fromElement(xml: Element) {
         let fields = {};
         for (let tag of Article.TagValues) {
             let el = xml.getElementsByTagName(tag)[0];
@@ -73,7 +75,7 @@ export class Article {
         return this.data_[Article.Tags.PUB_DATE];
     }
 
-    set description(value) {
+    set description(value: string) {
         this.data_[Article.Tags.DESCRIPTION] = value;
     }
 
@@ -87,7 +89,10 @@ export class Article {
 }
 
 export class Feed {
-    constructor(fields, articles = []) {
+    private data_: Record<string, string>;
+    private articles_: Article[];
+
+    constructor(fields: Record<string, string>, articles: Article[] = []) {
         this.data_ = {};
         for (let key of Feed.TagValues) {
             this.data_[key] = fields[key] ?? "";
@@ -108,7 +113,7 @@ export class Feed {
         return Object.values(Feed.Tags);
     }
 
-    static fromElement(xml) {
+    static fromElement(xml: Document|Element) {
         let fields = {};
         for (let tag of Feed.TagValues) {
             let el = xml.getElementsByTagName(tag)[0];
@@ -136,25 +141,25 @@ export class Feed {
         return [...this.articles_];
     }
 
-    set title(value) {
+    set title(value: string) {
         this.data_[Feed.Tags.TITLE] = value;
     }
 
-    set lastBuildDate(value) {
+    set lastBuildDate(value: string) {
         this.data_[Feed.Tags.LAST_BUILD_DATE] = value;
     }
 
-    set atomLink(value) {
+    set atomLink(value: string) {
         this.data_[Feed.Tags.ATOM_LINK] = value;
     }
 
-    set description(value) {
+    set description(value: string) {
         this.data_[Feed.Tags.DESCRIPTION] = value;
     }
 
     addArticle(article) {
         this.articles_.push(article);
-        this.articles_.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+        this.articles_.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
         this.articles_.splice(10);
     }
 
