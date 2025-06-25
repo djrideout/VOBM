@@ -21,8 +21,8 @@ let curr: Feed;
 try {
     curr = Feed.fromElement(domParser.parseFromString(await fs.readFile(xmlPath, "utf8"), "application/xml"));
 } catch (ex) {
-    console.log(`Cannot read ${xmlPath}: ${ex.message}`);
-    process.exit(); // Recreate this manually if it breaks
+    console.log(`Cannot read ${xmlPath}: ${ex.message}. Creating new feed...`);
+    curr = Feed.createEmpty();
 }
 
 let next: Feed;
