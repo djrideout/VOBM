@@ -5,7 +5,7 @@ import { JSDOM } from "jsdom";
 import _ from "lodash";
 import { Feed } from "./rss.mjs";
 
-const domParser = new (new JSDOM()).window.DOMParser();
+const domParser = new new JSDOM().window.DOMParser();
 
 const title = "VOBM";
 const description = "Voice of Bayman";
@@ -14,7 +14,8 @@ const xmlPath = `${xmlDir}/rss.xml`;
 const xmlURL = "https://djrideout.github.io/VOBM/rss.xml";
 const vocmURL = "https://vocm.com/feed/";
 
-const prompt = (content: string) => `You are a stereotypical person from Newfoundland, what one may call a "bayman". You need to summarize the contents of this news article, and do so the same way you would in casual conversation, while maybe throwing in a sarcastic comment or personal opinion on the matter: ${content}`;
+const prompt = (content: string) =>
+    `You are a stereotypical person from Newfoundland, what one may call a "bayman". You need to summarize the contents of this news article, and do so the same way you would in casual conversation, while maybe throwing in a sarcastic comment or personal opinion on the matter: ${content}`;
 
 let curr: Feed;
 try {
@@ -26,7 +27,9 @@ try {
 
 let next: Feed;
 try {
-    next = Feed.fromElement(domParser.parseFromString(await fetch(vocmURL).then((res) => res.text()), "application/xml"));
+    next = Feed.fromElement(
+        domParser.parseFromString(await fetch(vocmURL).then((res) => res.text()), "application/xml"),
+    );
 } catch (ex) {
     console.log(`Cannot fetch ${vocmURL}: ${ex.message}`);
     process.exit(); // Nothing to compare to, so exit
@@ -46,10 +49,10 @@ for (let article of newArticles) {
 
 const openai = new OpenAI({
     organization: process.env.OPENAI_ORG_ID,
-    project: process.env.OPENAI_PROJECT_ID
+    project: process.env.OPENAI_PROJECT_ID,
 });
 
-let buildDate = (new Date()).toUTCString();
+let buildDate = new Date().toUTCString();
 curr.title = title;
 curr.atomLink = xmlURL;
 curr.description = description;
@@ -80,7 +83,7 @@ for (let guid of newArticles) {
         let stream = await openai.chat.completions.create({
             model: "gpt-4o",
             messages: [{ role: "user", content: prompt(article.content) }],
-            stream: true
+            stream: true,
         });
         for await (const chunk of stream) {
             let content = chunk.choices[0]?.delta?.content ?? "";
