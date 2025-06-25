@@ -1,7 +1,7 @@
 name: TypeScript Check
 
 on:
-  pull-request:
+  pull_request:
     branches:
       - main
 
