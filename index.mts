@@ -1,12 +1,11 @@
-import fs from "node:fs/promises";
+import { promises as fs } from "fs";
 import "dotenv/config";
 import OpenAI from "openai";
-import jsdom from "jsdom";
+import { JSDOM } from "jsdom";
 import _ from "lodash";
 import { Feed } from "./rss.mjs";
 
-const { JSDOM } = jsdom;
-global.DOMParser = new (new JSDOM()).window.DOMParser();
+const domParser = new (new JSDOM()).window.DOMParser();
 
 const title = "VOBM";
 const description = "Voice of Bayman";
@@ -15,19 +14,19 @@ const xmlPath = `${xmlDir}/rss.xml`;
 const xmlURL = "https://djrideout.github.io/VOBM/rss.xml";
 const vocmURL = "https://vocm.com/feed/";
 
-const prompt = (content) => `You are a stereotypical person from Newfoundland, what one may call a "bayman". You need to summarize the contents of this news article, and do so the same way you would in casual conversation, while maybe throwing in a sarcastic comment or personal opinion on the matter: ${content}`;
+const prompt = (content: string) => `You are a stereotypical person from Newfoundland, what one may call a "bayman". You need to summarize the contents of this news article, and do so the same way you would in casual conversation, while maybe throwing in a sarcastic comment or personal opinion on the matter: ${content}`;
 
-let curr = null;
+let curr: Feed;
 try {
-    curr = Feed.fromElement(DOMParser.parseFromString(await fs.readFile(xmlPath, "utf8"), "application/xml"));
+    curr = Feed.fromElement(domParser.parseFromString(await fs.readFile(xmlPath, "utf8"), "application/xml"));
 } catch (ex) {
     console.log(`Cannot read ${xmlPath}: ${ex.message}`);
     process.exit(); // Recreate this manually if it breaks
 }
 
-let next = null;
+let next: Feed;
 try {
-    next = Feed.fromElement(DOMParser.parseFromString(await fetch(vocmURL).then((res) => res.text()), "application/xml"));
+    next = Feed.fromElement(domParser.parseFromString(await fetch(vocmURL).then((res) => res.text()), "application/xml"));
 } catch (ex) {
     console.log(`Cannot fetch ${vocmURL}: ${ex.message}`);
     process.exit(); // Nothing to compare to, so exit
@@ -58,7 +57,12 @@ curr.description = description;
 let published = curr.articles;
 
 for (let guid of newArticles) {
-    let article = next.getArticleByGUID(guid).clone();
+    let article = next.getArticleByGUID(guid)?.clone();
+
+    if (!article) {
+        console.log(`Article ${guid} not found in next feed, skipping...`);
+        continue;
+    }
 
     if (!article.category.includes("Local News")) {
         console.log(`Article ${guid} not Local News, skipping...`);

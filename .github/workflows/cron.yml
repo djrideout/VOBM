@@ -32,7 +32,7 @@ jobs:
         OPENAI_ORG_ID: ${{ secrets.OPENAI_ORG_ID }}
         OPENAI_PROJECT_ID: ${{ secrets.OPENAI_PROJECT_ID }}
       timeout-minutes: 5
-      run: node index.mjs
+      run: npm run generate
     - name: Commit if dirty
       run: |-
         git config --global user.name 'GitHub Actions'
