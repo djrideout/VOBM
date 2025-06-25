@@ -5,7 +5,11 @@
   "main": "index.mts",
   "scripts": {
     "generate": "tsx index.mts",
-    "lint:ts": "tsc --noEmit"
+    "lint:ts": "tsc --noEmit",
+    "lint:format": "biome format 2>&1",
+    "lint:format-write": "biome format --write 2>&1",
+    "lint:es": "biome lint 2>&1 --diagnostic-level=error",
+    "lint:es-write": "biome lint --write 2>&1 --diagnostic-level=error"
   },
   "repository": {
     "type": "git",
@@ -24,6 +28,7 @@
     "openai": "^4.52.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.0.5",
     "@types/jsdom": "^21.1.7",
     "@types/lodash": "^4.17.18",
     "@types/node": "^24.0.4",

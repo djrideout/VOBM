@@ -17,8 +17,8 @@ export class Article {
         DESCRIPTION: "description",
         CONTENT: "content:encoded",
         PUB_DATE: "pubDate",
-        CATEGORY: "category"
-    }
+        CATEGORY: "category",
+    };
 
     static get TagValues() {
         return Object.values(Article.Tags);
@@ -28,11 +28,7 @@ export class Article {
         let value = this.data_[tag];
         let prefix = "";
         let postfix = "";
-        if ([
-            Article.Tags.DESCRIPTION,
-            Article.Tags.CONTENT,
-            Article.Tags.CATEGORY
-        ].some((t) => tag === t)) {
+        if ([Article.Tags.DESCRIPTION, Article.Tags.CONTENT, Article.Tags.CATEGORY].some((t) => tag === t)) {
             prefix = value.startsWith("<![CDATA[") ? "" : "<![CDATA[";
             postfix = value.endsWith("]]>") ? "" : "]]>";
         }
@@ -107,13 +103,13 @@ export class Feed {
         DESCRIPTION: "description",
         LANGUAGE: "language",
         LAST_BUILD_DATE: "lastBuildDate",
-    }
+    };
 
     static get TagValues() {
         return Object.values(Feed.Tags);
     }
 
-    static fromElement(xml: Document|Element) {
+    static fromElement(xml: Document | Element) {
         let fields = {};
         for (let tag of Feed.TagValues) {
             let el = xml.getElementsByTagName(tag)[0];
@@ -126,9 +122,13 @@ export class Feed {
     }
 
     toString() {
-        let output = '<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss/" version="2.0"><channel>';
+        let output =
+            '<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss/" version="2.0"><channel>';
         for (let tag of Feed.TagValues) {
-            output += tag === Feed.Tags.ATOM_LINK ? `<${tag} href="${this.data_[tag]}" rel="self" type="application/rss+xml" />` : `<${tag}>${this.data_[tag]}</${tag}>`;
+            output +=
+                tag === Feed.Tags.ATOM_LINK
+                    ? `<${tag} href="${this.data_[tag]}" rel="self" type="application/rss+xml" />`
+                    : `<${tag}>${this.data_[tag]}</${tag}>`;
         }
         for (let article of this.articles_) {
             output += article.toString();
