@@ -14,18 +14,23 @@ jobs:
       pages: write    # to deploy to Pages
       id-token: write # to verify the deployment originates from an appropriate source
     steps:
+
     - uses: actions/checkout@v4
+
     - name: Set up worktrees
       run: |-
         git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
         git worktree add gh-pages gh-pages
+
     - uses: actions/setup-node@v4
       with:
         node-version: latest
         cache: npm
         cache-dependency-path: package-lock.json
+
     - name: Install dependencies
       run: npm install
+
     - name: Check VOCM
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -33,6 +38,7 @@ jobs:
         OPENAI_PROJECT_ID: ${{ secrets.OPENAI_PROJECT_ID }}
       timeout-minutes: 5
       run: npm run generate
+
     - name: Commit if dirty
       run: |-
         git config --global user.name 'GitHub Actions'
@@ -46,11 +52,14 @@ jobs:
         	git push --force
         }
         (cd gh-pages; if dirty; then push; echo "DEPLOY=1" >> "${GITHUB_ENV}"; fi)
+
     - uses: actions/configure-pages@v5
       if: env.DEPLOY == '1'
+
     - uses: actions/upload-pages-artifact@v3
       if: env.DEPLOY == '1'
       with:
         path: gh-pages
+
     - uses: actions/deploy-pages@v4
       if: env.DEPLOY == '1'
