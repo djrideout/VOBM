@@ -165,13 +165,13 @@ export class Feed {
         this.data_["description"] = value;
     }
 
-    addArticle(article) {
+    addArticle(article: Article) {
         this.articles_.push(article);
         this.articles_.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
         this.articles_.splice(10);
     }
 
-    getArticleByGUID(guid) {
+    getArticleByGUID(guid: string) {
         return this.articles_.find((article) => article.guid === guid);
     }
 }
