@@ -1,34 +1,38 @@
-export class Article {
-    private data_: Record<string, string>;
+const ArticleTags = [
+    "title",
+    "link",
+    "guid",
+    "media:content",
+    "dc:creator",
+    "description",
+    "content:encoded",
+    "pubDate",
+    "category",
+] as const;
 
-    constructor(fields: Record<string, string>) {
-        this.data_ = {};
-        for (let tag of Article.TagValues) {
+type ArticleTag = (typeof ArticleTags)[number];
+
+export class Article {
+    private data_: Record<ArticleTag, string> = ArticleTags.reduce(
+        (acc, tag) => {
+            acc[tag] = "";
+            return acc;
+        },
+        {} as Record<ArticleTag, string>,
+    );
+
+    constructor(fields: Partial<Record<ArticleTag, string>>) {
+        for (let tag of ArticleTags) {
             this.data_[tag] = fields[tag] ?? "";
         }
     }
 
-    static Tags = {
-        TITLE: "title",
-        LINK: "link",
-        GUID: "guid",
-        MEDIA: "media:content",
-        CREATOR: "dc:creator",
-        DESCRIPTION: "description",
-        CONTENT: "content:encoded",
-        PUB_DATE: "pubDate",
-        CATEGORY: "category",
-    };
-
-    static get TagValues() {
-        return Object.values(Article.Tags);
-    }
-
-    getFormattedField_(tag: string) {
+    getFormattedField_(tag: ArticleTag) {
         let value = this.data_[tag];
         let prefix = "";
         let postfix = "";
-        if ([Article.Tags.DESCRIPTION, Article.Tags.CONTENT, Article.Tags.CATEGORY].some((t) => tag === t)) {
+        const formattedFields: ArticleTag[] = ["description", "content:encoded", "category"];
+        if (formattedFields.some((t) => tag === t)) {
             prefix = value.startsWith("<![CDATA[") ? "" : "<![CDATA[";
             postfix = value.endsWith("]]>") ? "" : "]]>";
         }
@@ -37,10 +41,10 @@ export class Article {
 
     static fromElement(xml: Element) {
         let fields = {};
-        for (let tag of Article.TagValues) {
+        for (let tag of ArticleTags) {
             let el = xml.getElementsByTagName(tag)[0];
             if (el) {
-                fields[tag] = tag === Article.Tags.MEDIA ? el.outerHTML : el.textContent;
+                fields[tag] = tag === "media:content" ? el.outerHTML : el.textContent;
             }
         }
         return new Article(fields);
@@ -48,35 +52,35 @@ export class Article {
 
     toString() {
         let output = "<item>";
-        for (let tag of Article.TagValues) {
-            output += tag === Article.Tags.MEDIA ? this.data_[tag] : `<${tag}>${this.getFormattedField_(tag)}</${tag}>`;
+        for (let tag of ArticleTags) {
+            output += tag === "media:content" ? this.data_[tag] : `<${tag}>${this.getFormattedField_(tag)}</${tag}>`;
         }
         output += "</item>";
         return output;
     }
 
     set content(value) {
-        this.data_[Article.Tags.CONTENT] = value;
+        this.data_["content:encoded"] = value;
     }
 
     get content() {
-        return this.data_[Article.Tags.CONTENT];
+        return this.data_["content:encoded"];
     }
 
     get guid() {
-        return this.data_[Article.Tags.GUID];
+        return this.data_["guid"];
     }
 
     get pubDate() {
-        return this.data_[Article.Tags.PUB_DATE];
+        return this.data_["pubDate"];
     }
 
     set description(value: string) {
-        this.data_[Article.Tags.DESCRIPTION] = value;
+        this.data_["description"] = value;
     }
 
     get category() {
-        return this.data_[Article.Tags.CATEGORY];
+        return this.data_["category"];
     }
 
     clone() {
@@ -84,37 +88,33 @@ export class Article {
     }
 }
 
+const FeedTags = ["title", "atom:link", "link", "description", "language", "lastBuildDate"] as const;
+
+type FeedTag = (typeof FeedTags)[number];
+
 export class Feed {
-    private data_: Record<string, string>;
+    private data_: Record<FeedTag, string> = FeedTags.reduce(
+        (acc, tag) => {
+            acc[tag] = "";
+            return acc;
+        },
+        {} as Record<FeedTag, string>,
+    );
     private articles_: Article[];
 
-    constructor(fields: Record<string, string>, articles: Article[] = []) {
-        this.data_ = {};
-        for (let key of Feed.TagValues) {
+    constructor(fields: Partial<Record<FeedTag, string>>, articles: Article[] = []) {
+        for (let key of FeedTags) {
             this.data_[key] = fields[key] ?? "";
         }
         this.articles_ = articles;
     }
 
-    static Tags = {
-        TITLE: "title",
-        ATOM_LINK: "atom:link",
-        LINK: "link",
-        DESCRIPTION: "description",
-        LANGUAGE: "language",
-        LAST_BUILD_DATE: "lastBuildDate",
-    };
-
-    static get TagValues() {
-        return Object.values(Feed.Tags);
-    }
-
     static fromElement(xml: Document | Element) {
         let fields = {};
-        for (let tag of Feed.TagValues) {
+        for (let tag of FeedTags) {
             let el = xml.getElementsByTagName(tag)[0];
             if (el) {
-                fields[tag] = tag === Feed.Tags.ATOM_LINK ? el.getAttribute("href") : el.textContent;
+                fields[tag] = tag === "atom:link" ? el.getAttribute("href") : el.textContent;
             }
         }
         let articles = [...xml.querySelectorAll("item")].map((el) => Article.fromElement(el));
@@ -123,7 +123,7 @@ export class Feed {
 
     static createEmpty() {
         let fields = {};
-        for (let tag of Feed.TagValues) {
+        for (let tag of FeedTags) {
             fields[tag] = "";
         }
         return new Feed(fields);
@@ -132,9 +132,9 @@ export class Feed {
     toString() {
         let output =
             '<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss/" version="2.0"><channel>';
-        for (let tag of Feed.TagValues) {
+        for (let tag of FeedTags) {
             output +=
-                tag === Feed.Tags.ATOM_LINK
+                tag === "atom:link"
                     ? `<${tag} href="${this.data_[tag]}" rel="self" type="application/rss+xml" />`
                     : `<${tag}>${this.data_[tag]}</${tag}>`;
         }
@@ -150,19 +150,19 @@ export class Feed {
     }
 
     set title(value: string) {
-        this.data_[Feed.Tags.TITLE] = value;
+        this.data_["title"] = value;
     }
 
     set lastBuildDate(value: string) {
-        this.data_[Feed.Tags.LAST_BUILD_DATE] = value;
+        this.data_["lastBuildDate"] = value;
     }
 
     set atomLink(value: string) {
-        this.data_[Feed.Tags.ATOM_LINK] = value;
+        this.data_["atom:link"] = value;
     }
 
     set description(value: string) {
-        this.data_[Feed.Tags.DESCRIPTION] = value;
+        this.data_["description"] = value;
     }
 
     addArticle(article) {
